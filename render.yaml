@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pro-pitch
+    name: pro-pitch-job-interview
     env: python
     buildCommand: ""
-    startCommand: python app.py
+    startCommand: gunicorn pitch:app
