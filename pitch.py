@@ -30,31 +30,53 @@ def criar_tabela():
     conn.close()
 
 criar_tabela()
-
+  
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    pitch_texto = ''
+    
     if request.method == 'POST':
-        dados = request.form
-        conn = sqlite3.connect('pitch.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO pitches (
-                nome, curso, objetivo, tecnologia, habilidade1, habilidade2,
-                empresa, diferencial, experiencia, softskill, conquista,
-                projeto_desejado, formato, disponibilidade
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            dados.get('nome'), dados.get('curso'), dados.get('objetivo'),
-            dados.get('tecnologia'), dados.get('habilidade1'), dados.get('habilidade2'),
-            dados.get('empresa'), dados.get('diferencial'), dados.get('experiencia'),
-            dados.get('softskill'), dados.get('conquista'), dados.get('projeto_desejado'),
-            dados.get('formato'), dados.get('disponibilidade')
-        ))
-        conn.commit()
-        conn.close()
-        return f"<h2 style='color:white'>Pitch registrado com sucesso, {dados.get('nome')}!</h2>"
+        try:
+            dados = request.form
+            print("📥 Dados recebidos:", dados)
 
-    return render_template_string(HTML_TEMPLATE)
+            conn = sqlite3.connect('pitch.db')
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO pitches (
+                    nome, curso, objetivo, tecnologia, habilidade1, habilidade2,
+                    empresa, diferencial, experiencia, softskill, conquista,
+                    projeto_desejado, formato, disponibilidade
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                dados.get('nome'), dados.get('curso'), dados.get('objetivo'),
+                dados.get('tecnologia'), dados.get('habilidade1'), dados.get('habilidade2'),
+                dados.get('empresa'), dados.get('diferencial'), dados.get('experiencia'),
+                dados.get('softskill'), dados.get('conquista'), dados.get('projeto_desejado'),
+                dados.get('formato'), dados.get('disponibilidade')
+            ))
+            conn.commit()
+            conn.close()
+
+            # Geração do pitch
+            pitch_texto = f"""
+            <div class='success'>
+                <h2>🎤 Seu Pitch Profissional</h2>
+                <p>Olá! Meu nome é <strong>{dados.get('nome')}</strong>, sou da área de <strong>{dados.get('curso')}</strong> e tenho como objetivo atuar em <strong>{dados.get('objetivo')}</strong>.</p>
+                <p>Tenho experiência com <strong>{dados.get('tecnologia')}</strong> e minhas principais habilidades são <strong>{dados.get('habilidade1')}</strong> e <strong>{dados.get('habilidade2')}</strong>.</p>
+                <p>Um diferencial que me destaca é <strong>{dados.get('diferencial')}</strong>. Já participei de <strong>{dados.get('experiencia')}</strong>, onde desenvolvi minha <strong>{dados.get('softskill')}</strong>.</p>
+                <p>Uma conquista que me orgulho é <strong>{dados.get('conquista')}</strong>. Tenho como meta trabalhar na <strong>{dados.get('empresa')}</strong>, especialmente em <strong>{dados.get('projeto_desejado')}</strong>.</p>
+                <p>Estou disponível para atuar em formato <strong>{dados.get('formato')}</strong>, com disponibilidade <strong>{dados.get('disponibilidade')}</strong>.</p>
+            </div>
+            """
+
+        except Exception as e:
+            pitch_texto = f"<div class='success'><p style='color:red'>❌ Erro ao salvar pitch: {e}</p></div>"
+            print("⚠️ Erro:", e)
+
+    return render_template_string(HTML_TEMPLATE + pitch_texto)
+
+
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
